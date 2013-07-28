@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/com.burnskids.jsdt.extjs_1.0.0.qualifier.jar" id="com.burnskids.jsdt.extjs" version="1.0.0.qualifier">
+      <category name="com.burnskids.jsdt.extjs.category"/>
+   </feature>
+   <category-def name="com.burnskids.jsdt.extjs.category" label="ExtJS JSDT"/>
+</site>

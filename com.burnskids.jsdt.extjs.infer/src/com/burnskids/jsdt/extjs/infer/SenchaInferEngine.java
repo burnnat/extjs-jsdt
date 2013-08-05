@@ -17,7 +17,7 @@ public class SenchaInferEngine implements IInferEngine {
 
 	@Override
 	public void initialize() {
-		System.out.println("initialized");
+		
 	}
 
 	@Override
@@ -34,9 +34,26 @@ public class SenchaInferEngine implements IInferEngine {
 	public void doInfer() {
 		ASTVisitor inferrer = new ClassDefinitionInferrer(this);
 		compUnit.traverse(inferrer);
+		
+		inferrer = new ClassInheritanceInferrer(this);
+		compUnit.traverse(inferrer);
 	}
 	
 	protected InferredType addType(char[] name) {
 		return compUnit.addType(name, true, provider.getID());
+	}
+	
+	protected InferredType getType(char[] name) {
+		return compUnit.findInferredType(name);
+	}
+	
+	protected InferredType createTypeIfNeeded(char[] name) {
+		InferredType type = this.getType(name);
+		
+		if (type == null) {
+			type = compUnit.addType(name, false, provider.getID());
+		}
+		
+		return type;
 	}
 }

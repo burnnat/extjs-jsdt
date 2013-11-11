@@ -32,16 +32,30 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 
 	@Override
 	protected void handleClass(IStringLiteral name, IObjectLiteral definition) {
-		InferredType type = parent.addType(name.source());
+		IStringLiteral className = name;
 		
 		if (definition == null) {
+			parent.addType(className.source());
 			return;
 		}
+		
+		for (IObjectLiteralField field : definition.getFields()) {
+			if (equal(fieldNameFor(field), OVERRIDE)) {
+				IExpression value = field.getInitializer();
+				
+				if (value.getASTType() == IExpression.STRING_LITERAL) {
+					className = (IStringLiteral) value;
+					break;
+				}
+			}
+		}
+		
+		InferredType type = parent.addType(className.source());
 		
 		type.setIsGlobal(true);
 		type.setIsDefinition(true);
 		
-		type.setNameStart(name.sourceStart() + 1);
+		type.setNameStart(className.sourceStart() + 1);
 		type.updatePositions(definition.sourceStart(), definition.sourceEnd());
 		
 		for (IObjectLiteralField field : definition.getFields()) {

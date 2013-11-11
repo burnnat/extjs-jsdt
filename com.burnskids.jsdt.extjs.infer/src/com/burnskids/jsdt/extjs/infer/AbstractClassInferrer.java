@@ -9,6 +9,7 @@ import org.eclipse.wst.jsdt.core.ast.IObjectLiteralField;
 import org.eclipse.wst.jsdt.core.ast.IReturnStatement;
 import org.eclipse.wst.jsdt.core.ast.ISingleNameReference;
 import org.eclipse.wst.jsdt.core.ast.IStringLiteral;
+import org.eclipse.wst.jsdt.core.infer.InferredType;
 
 public abstract class AbstractClassInferrer extends ASTVisitor {
 
@@ -91,6 +92,10 @@ public abstract class AbstractClassInferrer extends ASTVisitor {
 		}
 		
 		return true;
+	}
+	
+	protected static void addModifiers(InferredType type, int modifiers) {
+		type.setModifiers(type.getModifiers() | modifiers);
 	}
 	
 	protected static char[] fieldNameFor(IObjectLiteralField field) {

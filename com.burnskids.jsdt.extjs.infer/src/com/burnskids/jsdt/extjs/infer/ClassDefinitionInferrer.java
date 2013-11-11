@@ -6,12 +6,22 @@ import org.eclipse.wst.jsdt.core.ast.IFunctionExpression;
 import org.eclipse.wst.jsdt.core.ast.IObjectLiteral;
 import org.eclipse.wst.jsdt.core.ast.IObjectLiteralField;
 import org.eclipse.wst.jsdt.core.ast.IStringLiteral;
+import org.eclipse.wst.jsdt.core.infer.InferredAttribute;
+import org.eclipse.wst.jsdt.core.infer.InferredMember;
 import org.eclipse.wst.jsdt.core.infer.InferredType;
+import org.eclipse.wst.jsdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.wst.jsdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.wst.jsdt.internal.core.search.indexing.IIndexConstants;
 
 public class ClassDefinitionInferrer extends AbstractClassInferrer {
 	
 	private static final char[] CONSTRUCTOR = new char[] { 'c', 'o', 'n', 's', 't', 'r', 'u', 'c', 't', 'o', 'r' };
+	private static final char[] STATICS = new char[] { 's', 't', 'a', 't', 'i', 'c', 's' };
+	private static final char[] CONFIG = new char[] { 'c', 'o', 'n', 'f', 'i', 'g' };
+	private static final char[] ALIAS = new char[] { 'a', 'l', 'i', 'a', 's' };
+	private static final char[] SINGLETON = new char[] { 's', 'i', 'n', 'g', 'l', 'e', 't', 'o', 'n' };
+	private static final char[] ALTERNATE_CLASS_NAME = new char[] { 'a', 'l', 't', 'e', 'r', 'n', 'a', 't', 'e', 'C', 'l', 'a', 's', 's', 'N', 'a', 'm', 'e' };
+	private static final char[] OVERRIDE = new char[] { 'o', 'v', 'e', 'r', 'r', 'i', 'd', 'e' };
 	
 	public ClassDefinitionInferrer(SenchaInferEngine parent) {
 		super(parent);
@@ -21,16 +31,21 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 	protected void handleClass(IStringLiteral name, IObjectLiteral definition) {
 		InferredType type = parent.addType(name.source());
 		
-		for (IObjectLiteralField field : definition.getFields()) {
-			addField(field, type);
+		if (definition == null) {
+			return;
 		}
 		
 		type.setIsGlobal(true);
 		type.setIsDefinition(true);
-		type.setModifiers(ClassFileConstants.AccPublic);
 		
 		type.setNameStart(name.sourceStart() + 1);
 		type.updatePositions(definition.sourceStart(), definition.sourceEnd());
+		
+		for (IObjectLiteralField field : definition.getFields()) {
+			addField(field, type);
+		}
+		
+		addModifiers(type, ClassFileConstants.AccPublic);
 		
 		definition.setInferredType(type);
 	}
@@ -54,7 +69,64 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 			}
 		}
 		else if (!ClassInheritanceInferrer.isReserved(name)) {
-			type.addAttribute(name, fieldValue, nameStart);
+			if (equal(name, STATICS) && fieldValue.getASTType() == IExpression.OBJECT_LITERAL) {
+				handleStatics(type, (IObjectLiteral) fieldValue);
+			}
+			else if (equal(name, CONFIG) && fieldValue.getASTType() == IExpression.OBJECT_LITERAL) {
+				handleConfig(type, (IObjectLiteral) fieldValue);
+			}
+			else if (equal(name, ALIAS)) {
+				
+			}
+			else if (equal(name, ALTERNATE_CLASS_NAME)) {
+				
+			}
+			else if (equal(name, SINGLETON)) {
+				type.isAnonymous = true;
+				
+				parent.getGlobalType().addAttribute(
+					new InferredAttribute(type.getName(), type, type.sourceStart(), type.sourceEnd())
+				);
+			}
+			else {
+				type.addAttribute(name, fieldValue, nameStart);
+			}
+		}
+	}
+	
+	private void handleStatics(InferredType type, IObjectLiteral statics) {
+		for (IObjectLiteralField field : statics.getFields()) {
+			char[] name = fieldNameFor(field);
+			
+			IExpression fieldName = field.getFieldName();
+			int nameStart = fieldName.sourceStart() + (fieldName.getASTType() == IExpression.STRING_LITERAL ? 1 : 0);
+			
+			IExpression value = field.getInitializer();
+			InferredMember member;
+			
+			if (value.getASTType() == IExpression.FUNCTION_EXPRESSION) {
+				MethodDeclaration declaration = ((IFunctionExpression) value).getMethodDeclaration();
+				declaration.getInferredMethod().isStatic = true;
+				
+				member = type.addMethod(name, declaration, nameStart);
+			}
+			else {
+				member = type.addAttribute(name, value, nameStart);
+			}
+			
+			member.isStatic = true;
+		}
+	}
+	
+	private void handleConfig(InferredType type, IObjectLiteral statics) {
+		for (IObjectLiteralField field : statics.getFields()) {
+			char[] name = fieldNameFor(field);
+			
+			String capitalized = String.valueOf(name);
+			capitalized = capitalized.substring(0, 1).toUpperCase() + capitalized.substring(1);
+			
+			type.addMethod(("get" + capitalized).toCharArray(), new MethodDeclaration(null), 0);
+			type.addMethod(("set" + capitalized).toCharArray(), new MethodDeclaration(null), 0);
 		}
 	}
 }

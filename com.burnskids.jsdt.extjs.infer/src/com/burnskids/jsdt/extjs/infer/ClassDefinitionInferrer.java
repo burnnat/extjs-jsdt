@@ -1,5 +1,9 @@
 package com.burnskids.jsdt.extjs.infer;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.wst.jsdt.core.ast.ASTVisitor;
 import org.eclipse.wst.jsdt.core.ast.IExpression;
 import org.eclipse.wst.jsdt.core.ast.IFunctionDeclaration;
 import org.eclipse.wst.jsdt.core.ast.IFunctionExpression;
@@ -11,7 +15,6 @@ import org.eclipse.wst.jsdt.core.infer.InferredMember;
 import org.eclipse.wst.jsdt.core.infer.InferredType;
 import org.eclipse.wst.jsdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.wst.jsdt.internal.compiler.classfmt.ClassFileConstants;
-import org.eclipse.wst.jsdt.internal.core.search.indexing.IIndexConstants;
 
 public class ClassDefinitionInferrer extends AbstractClassInferrer {
 	
@@ -47,6 +50,14 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 		
 		addModifiers(type, ClassFileConstants.AccPublic);
 		
+		InferredType[] synonyms = type.getSynonyms();
+		
+		if (synonyms != null) {
+			for (InferredType synonym : synonyms) {
+				synonym.mixin(type);
+			}
+		}
+		
 		definition.setInferredType(type);
 	}
 	
@@ -79,7 +90,30 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 				
 			}
 			else if (equal(name, ALTERNATE_CLASS_NAME)) {
+				final List<IStringLiteral> synonyms = new ArrayList<IStringLiteral>();
 				
+				if (fieldValue.getASTType() == IExpression.STRING_LITERAL) {
+					synonyms.add((IStringLiteral) fieldValue);
+				}
+				else if (fieldValue.getASTType() == IExpression.ARRAY_INITIALIZER) {
+					fieldValue.traverse(new ASTVisitor() {
+						@Override
+						public boolean visit(IStringLiteral name) {
+							synonyms.add(name);
+							return true;
+						}
+					});
+				}
+				
+				for (IStringLiteral synonym : synonyms) {
+					InferredType linked = parent.addType(synonym.source());
+					
+					linked.setIsGlobal(true);
+					linked.setIsDefinition(true);
+					linked.setNameStart(synonym.sourceStart() + 1);
+					
+					type.addSynonym(linked);
+				}
 			}
 			else if (equal(name, SINGLETON)) {
 				type.isAnonymous = true;

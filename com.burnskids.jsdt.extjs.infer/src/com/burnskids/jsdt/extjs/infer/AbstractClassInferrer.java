@@ -11,36 +11,23 @@ import org.eclipse.wst.jsdt.core.ast.ISingleNameReference;
 import org.eclipse.wst.jsdt.core.ast.IStringLiteral;
 import org.eclipse.wst.jsdt.core.infer.InferredType;
 
-public abstract class AbstractClassInferrer extends ASTVisitor {
+public abstract class AbstractClassInferrer extends AbstractExtInferrer {
 
-	private static final char[] EXT = new char[] { 'E', 'x', 't' };
 	private static final char[] DEFINE = new char[] { 'd', 'e', 'f', 'i', 'n', 'e' };
 	
-	protected final SenchaInferEngine parent;
-	
 	public AbstractClassInferrer(SenchaInferEngine parent) {
-		this.parent = parent;
+		super(parent);
 	}
 	
 	@Override
 	public boolean visit(IFunctionCall functionCall) {
-		if (isExt(functionCall.getReceiver()) && equal(functionCall.getSelector(), DEFINE)) {
+		if (isExtMethod(functionCall, DEFINE)) {
 			parseDefine(functionCall.getArguments());
 		}
 		
 		return super.visit(functionCall);
 	}
-
-	protected static boolean isExt(IExpression expression) {
-		if (expression != null && expression.getASTType() == IExpression.SINGLE_NAME_REFERENCE) {
-			ISingleNameReference name = (ISingleNameReference) expression;
-			
-			return equal(name.getToken(), EXT);
-		}
-		
-		return false;
-	}
-
+	
 	private void parseDefine(IExpression[] arguments) {
 		if (arguments.length < 2) {
 			return;
@@ -80,37 +67,8 @@ public abstract class AbstractClassInferrer extends ASTVisitor {
 	
 	protected abstract void handleClass(IStringLiteral name, IObjectLiteral definition);
 	
-	protected static boolean equal(char[] first, char[] second) {
-		if (first.length != second.length) {
-			return false;
-		}
-		
-		for (int i = 0; i < first.length; i++) {
-			if (first[i] != second[i]) {
-				return false;
-			}
-		}
-		
-		return true;
-	}
-	
 	protected static void addModifiers(InferredType type, int modifiers) {
 		type.setModifiers(type.getModifiers() | modifiers);
-	}
-	
-	protected static char[] fieldNameFor(IObjectLiteralField field) {
-		IExpression fieldName = field.getFieldName();
-		
-		if (fieldName.getASTType() == IExpression.SINGLE_NAME_REFERENCE) {
-			return ((ISingleNameReference) fieldName).getToken();
-		}
-		else if (fieldName.getASTType() == IExpression.STRING_LITERAL) {
-			return ((IStringLiteral) fieldName).source();
-		}
-		else {
-			// TODO: throw an exception here instead of failing silently?
-			return null;
-		}
 	}
 	
 	class ReturnValueParser extends ASTVisitor {

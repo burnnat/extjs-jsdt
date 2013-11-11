@@ -10,6 +10,7 @@ import org.eclipse.wst.jsdt.core.ast.IFunctionExpression;
 import org.eclipse.wst.jsdt.core.ast.IObjectLiteral;
 import org.eclipse.wst.jsdt.core.ast.IObjectLiteralField;
 import org.eclipse.wst.jsdt.core.ast.IStringLiteral;
+import org.eclipse.wst.jsdt.core.compiler.CharOperation;
 import org.eclipse.wst.jsdt.core.infer.InferredAttribute;
 import org.eclipse.wst.jsdt.core.infer.InferredMember;
 import org.eclipse.wst.jsdt.core.infer.InferredType;
@@ -40,7 +41,7 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 		}
 		
 		for (IObjectLiteralField field : definition.getFields()) {
-			if (equal(fieldNameFor(field), OVERRIDE)) {
+			if (CharOperation.equals(fieldNameFor(field), OVERRIDE)) {
 				IExpression value = field.getInitializer();
 				
 				if (value.getASTType() == IExpression.STRING_LITERAL) {
@@ -86,7 +87,7 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 		if (fieldValue.getASTType() == IExpression.FUNCTION_EXPRESSION) {
 			IFunctionDeclaration declaration = ((IFunctionExpression) fieldValue).getMethodDeclaration();
 			
-			if (equal(name, CONSTRUCTOR)) {
+			if (CharOperation.equals(name, CONSTRUCTOR)) {
 				type.addConstructorMethod(name, declaration, nameStart);
 			}
 			else {
@@ -94,16 +95,16 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 			}
 		}
 		else if (!ClassInheritanceInferrer.isReserved(name)) {
-			if (equal(name, STATICS) && fieldValue.getASTType() == IExpression.OBJECT_LITERAL) {
+			if (CharOperation.equals(name, STATICS) && fieldValue.getASTType() == IExpression.OBJECT_LITERAL) {
 				handleStatics(type, (IObjectLiteral) fieldValue);
 			}
-			else if (equal(name, CONFIG) && fieldValue.getASTType() == IExpression.OBJECT_LITERAL) {
+			else if (CharOperation.equals(name, CONFIG) && fieldValue.getASTType() == IExpression.OBJECT_LITERAL) {
 				handleConfig(type, (IObjectLiteral) fieldValue);
 			}
-			else if (equal(name, ALIAS)) {
+			else if (CharOperation.equals(name, ALIAS)) {
 				
 			}
-			else if (equal(name, ALTERNATE_CLASS_NAME)) {
+			else if (CharOperation.equals(name, ALTERNATE_CLASS_NAME)) {
 				final List<IStringLiteral> synonyms = new ArrayList<IStringLiteral>();
 				
 				if (fieldValue.getASTType() == IExpression.STRING_LITERAL) {
@@ -129,7 +130,7 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 					type.addSynonym(linked);
 				}
 			}
-			else if (equal(name, SINGLETON)) {
+			else if (CharOperation.equals(name, SINGLETON)) {
 				type.isAnonymous = true;
 				
 				parent.getGlobalType().addAttribute(

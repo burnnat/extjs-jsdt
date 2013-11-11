@@ -4,6 +4,7 @@ import org.eclipse.wst.jsdt.core.ast.IExpression;
 import org.eclipse.wst.jsdt.core.ast.IObjectLiteral;
 import org.eclipse.wst.jsdt.core.ast.IObjectLiteralField;
 import org.eclipse.wst.jsdt.core.ast.IStringLiteral;
+import org.eclipse.wst.jsdt.core.compiler.CharOperation;
 import org.eclipse.wst.jsdt.core.infer.InferredType;
 
 public class ClassInheritanceInferrer extends AbstractClassInferrer {
@@ -23,10 +24,10 @@ public class ClassInheritanceInferrer extends AbstractClassInferrer {
 			char[] fieldName = fieldNameFor(field);
 			IExpression fieldValue = field.getInitializer();
 			
-			if (equal(fieldName, EXTEND) && fieldValue.getASTType() == IExpression.STRING_LITERAL) {
+			if (CharOperation.equals(fieldName, EXTEND) && fieldValue.getASTType() == IExpression.STRING_LITERAL) {
 				handleExtend(type, (IStringLiteral) fieldValue);
 			}
-			else if (equal(fieldName, MIXINS) && fieldValue.getASTType() == IExpression.OBJECT_LITERAL) {
+			else if (CharOperation.equals(fieldName, MIXINS) && fieldValue.getASTType() == IExpression.OBJECT_LITERAL) {
 				handleMixins(type, (IObjectLiteral) fieldValue);
 			}
 		}
@@ -53,6 +54,6 @@ public class ClassInheritanceInferrer extends AbstractClassInferrer {
 	}
 	
 	public static boolean isReserved(char[] name) {
-		return equal(name, EXTEND) || equal(name, MIXINS);
+		return CharOperation.equals(name, EXTEND) || CharOperation.equals(name, MIXINS);
 	}
 }

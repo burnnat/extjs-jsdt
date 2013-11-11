@@ -34,11 +34,15 @@ public class SenchaInferEngine implements IInferEngine {
 
 	@Override
 	public void doInfer() {
-		ASTVisitor inferrer = new ClassDefinitionInferrer(this);
-		compUnit.traverse(inferrer);
+		ASTVisitor[] inferrers = new ASTVisitor[] {
+			new ClassDefinitionInferrer(this),
+			new ClassInheritanceInferrer(this),
+			new ObjectCreationInferrer(this)
+		};
 		
-		inferrer = new ClassInheritanceInferrer(this);
-		compUnit.traverse(inferrer);
+		for (ASTVisitor inferrer : inferrers) {
+			compUnit.traverse(inferrer);
+		}
 	}
 	
 	protected InferredType addType(char[] name) {

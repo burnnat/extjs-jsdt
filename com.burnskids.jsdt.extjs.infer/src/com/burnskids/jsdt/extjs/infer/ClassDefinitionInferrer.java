@@ -14,6 +14,7 @@ import org.eclipse.wst.jsdt.core.ast.IStringLiteral;
 import org.eclipse.wst.jsdt.core.compiler.CharOperation;
 import org.eclipse.wst.jsdt.core.infer.InferredAttribute;
 import org.eclipse.wst.jsdt.core.infer.InferredMember;
+import org.eclipse.wst.jsdt.core.infer.InferredMethod;
 import org.eclipse.wst.jsdt.core.infer.InferredType;
 import org.eclipse.wst.jsdt.internal.compiler.ast.MethodDeclaration;
 
@@ -62,6 +63,8 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 		for (IObjectLiteralField field : definition.getFields()) {
 			addField(field, type);
 		}
+		
+		addDefaultConstructor(type);
 		
 		addModifiers(type, Flags.AccPublic);
 		
@@ -143,6 +146,17 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	private void addDefaultConstructor(InferredType type) {
+		for (InferredMethod method : (List<InferredMethod>) type.methods) {
+			if (method.isConstructor) {
+				return;
+			}
+		}
+		
+		type.addConstructorMethod(type.getName(), new MethodDeclaration(null), type.getNameStart());
+	}
+	
 	private void handleStatics(InferredType type, IObjectLiteral statics) {
 		for (IObjectLiteralField field : statics.getFields()) {
 			char[] name = fieldNameFor(field);
@@ -167,15 +181,15 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 		}
 	}
 	
-	private void handleConfig(InferredType type, IObjectLiteral statics) {
-		for (IObjectLiteralField field : statics.getFields()) {
+	private void handleConfig(InferredType type, IObjectLiteral configs) {
+		for (IObjectLiteralField field : configs.getFields()) {
 			char[] name = fieldNameFor(field);
 			
 			String capitalized = String.valueOf(name);
 			capitalized = capitalized.substring(0, 1).toUpperCase() + capitalized.substring(1);
 			
-			type.addMethod(("get" + capitalized).toCharArray(), new MethodDeclaration(null), 0);
-			type.addMethod(("set" + capitalized).toCharArray(), new MethodDeclaration(null), 0);
+			type.addMethod(("get" + capitalized).toCharArray(), new MethodDeclaration(null), field.sourceStart());
+			type.addMethod(("set" + capitalized).toCharArray(), new MethodDeclaration(null), field.sourceStart());
 		}
 	}
 }

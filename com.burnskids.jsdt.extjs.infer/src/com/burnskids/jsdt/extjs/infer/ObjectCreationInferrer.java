@@ -18,6 +18,24 @@ public class ObjectCreationInferrer extends AbstractExtInferrer {
 	}
 	
 	@Override
+	public boolean visit(IFunctionCall functionCall) {
+		// To handle anonymous Ext.create() calls, we need to be able
+		// to apply an inferred type to the function call directly.
+		// This would require some alteration to the resolveType()
+		// method of the MessageSend class.
+		
+//		if (functionCall instanceof MessageSend) {
+//			InferredType type = inferType(functionCall);
+//			
+//			if (type != null) {
+//				((MessageSend) functionCall).setInferredType(type);
+//			}
+//		}
+		
+		return super.visit(functionCall);
+	}
+	
+	@Override
 	public boolean visit(ILocalDeclaration declaration) {
 		InferredType type = inferType(declaration.getInitialization());
 		

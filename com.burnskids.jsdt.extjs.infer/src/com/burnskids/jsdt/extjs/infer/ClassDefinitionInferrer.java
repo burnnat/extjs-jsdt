@@ -88,7 +88,16 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 			IFunctionDeclaration declaration = ((IFunctionExpression) fieldValue).getMethodDeclaration();
 			
 			if (CharOperation.equals(name, CONSTRUCTOR)) {
-				type.addConstructorMethod(name, declaration, nameStart);
+				// If we reuse the same declaration, the default method binding will take precedence,
+				// meaning it will not be marked as a constructor. Here, we create a declaration that
+				// is identical, but will not have its method binding set with any other inferred method.
+				type.addConstructorMethod(
+					name,
+					new MethodDeclaration(
+						((MethodDeclaration) declaration).compilationResult()
+					),
+					type.getNameStart()
+				);
 			}
 			else {
 				type.addMethod(name, declaration, nameStart);

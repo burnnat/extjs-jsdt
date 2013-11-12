@@ -14,7 +14,6 @@ import org.eclipse.wst.jsdt.core.ast.IStringLiteral;
 import org.eclipse.wst.jsdt.core.compiler.CharOperation;
 import org.eclipse.wst.jsdt.core.infer.InferredAttribute;
 import org.eclipse.wst.jsdt.core.infer.InferredMember;
-import org.eclipse.wst.jsdt.core.infer.InferredMethod;
 import org.eclipse.wst.jsdt.core.infer.InferredType;
 import org.eclipse.wst.jsdt.internal.compiler.ast.MethodDeclaration;
 
@@ -89,16 +88,7 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 			IFunctionDeclaration declaration = ((IFunctionExpression) fieldValue).getMethodDeclaration();
 			
 			if (CharOperation.equals(name, CONSTRUCTOR)) {
-				// If we reuse the same declaration, the default method binding will take precedence,
-				// meaning it will not be marked as a constructor. Here, we create a declaration that
-				// is identical, but will not have its method binding set with any other inferred method.
-				type.addConstructorMethod(
-					name,
-					new MethodDeclaration(
-						((MethodDeclaration) declaration).compilationResult()
-					),
-					type.getNameStart()
-				);
+				type.addConstructorMethod(type.getName(), declaration, type.getNameStart());
 			}
 			else {
 				type.addMethod(name, declaration, nameStart);

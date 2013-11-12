@@ -3,7 +3,6 @@ package com.burnskids.jsdt.extjs.infer;
 import org.eclipse.wst.jsdt.core.ast.ASTVisitor;
 import org.eclipse.wst.jsdt.core.infer.IInferEngine;
 import org.eclipse.wst.jsdt.core.infer.InferOptions;
-import org.eclipse.wst.jsdt.core.infer.InferredAttribute;
 import org.eclipse.wst.jsdt.core.infer.InferredType;
 import org.eclipse.wst.jsdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.wst.jsdt.internal.core.search.indexing.IIndexConstants;

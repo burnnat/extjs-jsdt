@@ -3,6 +3,7 @@ package com.burnskids.jsdt.extjs.infer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.wst.jsdt.core.Flags;
 import org.eclipse.wst.jsdt.core.ast.ASTVisitor;
 import org.eclipse.wst.jsdt.core.ast.IExpression;
 import org.eclipse.wst.jsdt.core.ast.IFunctionDeclaration;
@@ -13,9 +14,9 @@ import org.eclipse.wst.jsdt.core.ast.IStringLiteral;
 import org.eclipse.wst.jsdt.core.compiler.CharOperation;
 import org.eclipse.wst.jsdt.core.infer.InferredAttribute;
 import org.eclipse.wst.jsdt.core.infer.InferredMember;
+import org.eclipse.wst.jsdt.core.infer.InferredMethod;
 import org.eclipse.wst.jsdt.core.infer.InferredType;
 import org.eclipse.wst.jsdt.internal.compiler.ast.MethodDeclaration;
-import org.eclipse.wst.jsdt.internal.compiler.classfmt.ClassFileConstants;
 
 public class ClassDefinitionInferrer extends AbstractClassInferrer {
 	
@@ -63,7 +64,7 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 			addField(field, type);
 		}
 		
-		addModifiers(type, ClassFileConstants.AccPublic);
+		addModifiers(type, Flags.AccPublic);
 		
 		InferredType[] synonyms = type.getSynonyms();
 		

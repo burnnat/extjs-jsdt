@@ -5,9 +5,7 @@ import org.eclipse.wst.jsdt.core.ast.IExpression;
 import org.eclipse.wst.jsdt.core.ast.IFunctionCall;
 import org.eclipse.wst.jsdt.core.ast.IFunctionExpression;
 import org.eclipse.wst.jsdt.core.ast.IObjectLiteral;
-import org.eclipse.wst.jsdt.core.ast.IObjectLiteralField;
 import org.eclipse.wst.jsdt.core.ast.IReturnStatement;
-import org.eclipse.wst.jsdt.core.ast.ISingleNameReference;
 import org.eclipse.wst.jsdt.core.ast.IStringLiteral;
 import org.eclipse.wst.jsdt.core.infer.InferredType;
 

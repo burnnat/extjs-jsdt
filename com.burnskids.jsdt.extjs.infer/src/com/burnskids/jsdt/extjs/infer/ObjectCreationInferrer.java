@@ -58,6 +58,10 @@ public class ObjectCreationInferrer extends AbstractExtInferrer {
 	}
 	
 	private InferredType inferType(IExpression value) {
+		if (value == null) {
+			return null;
+		}
+		
 		if (value.getASTType() == IExpression.FUNCTION_CALL) {
 			IFunctionCall functionCall = (IFunctionCall) value;
 			

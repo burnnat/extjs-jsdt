@@ -148,9 +148,11 @@ public class ClassDefinitionInferrer extends AbstractClassInferrer {
 	
 	@SuppressWarnings("unchecked")
 	private void addDefaultConstructor(InferredType type) {
-		for (InferredMethod method : (List<InferredMethod>) type.methods) {
-			if (method.isConstructor) {
-				return;
+		if (type.methods != null) {
+			for (InferredMethod method : (List<InferredMethod>) type.methods) {
+				if (method.isConstructor) {
+					return;
+				}
 			}
 		}
 		
